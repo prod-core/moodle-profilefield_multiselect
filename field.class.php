@@ -28,6 +28,8 @@
  * @copyright 2014 Nitin Jain
  * @license   http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
+use profilefield_multiselect\form\element\MoodleQuickForm_autocomplete as mform_autocomplete;
+
 class profile_field_multiselect extends profile_field_base
 {
     public $options;
@@ -51,7 +53,7 @@ class profile_field_multiselect extends profile_field_base
             $this->options[''] = get_string('choose').'...';
         }
         foreach ($options as $key => $option) {
-            $this->options[$key] = format_string($option); //multilang formatting
+            $this->options[$key] = format_string($option, true, ['context' => context_system::instance()]); //multilang formatting
         }
 
         /// Set the data key
@@ -62,6 +64,7 @@ class profile_field_multiselect extends profile_field_base
                 $this->datakey[] = (int) array_search($option1, $this->options);
             }
         }
+        mform_autocomplete::init();
     }
 
     /**
@@ -72,8 +75,7 @@ class profile_field_multiselect extends profile_field_base
      */
     public function edit_field_add($mform)
     {
-        $mform->addElement('select', $this->inputname, format_string($this->field->name), $this->options);
-        $mform->getElement($this->inputname)->setMultiple(true);
+        $mform->addElement(mform_autocomplete::NAME, $this->inputname, format_string($this->field->name), $this->options, ['multiple' => true]);
     }
 
     /**
@@ -88,31 +90,6 @@ class profile_field_multiselect extends profile_field_base
         }
 
         $mform->setDefault($this->inputname, $defaultkey);
-    }
-
-    /**
-     * The data from the form returns the key. This should be converted to the
-     * respective option string to be saved in database
-     * Overwrites base class accessor method.
-     *
-     * @param mixed    $data       - the key returned from the select input in the form
-     * @param stdClass $datarecord The object that will be used to save the record
-     */
-    public function edit_save_data_preprocess($data, $datarecord)
-    {
-        //print "<pre>";print_r($data);die;
-        $string = '';
-        if (is_array($data)) {
-            foreach ($data as $key) {
-                if (isset($this->options[$key])) {
-                    $string .= $this->options[$key]."\r\n";
-                }
-            }
-
-            return substr($string, 0, -2);
-        }
-
-        return isset($this->options[$data]) ? $this->options[$data] : null;
     }
 
     /**
@@ -141,26 +118,5 @@ class profile_field_multiselect extends profile_field_base
             $mform->hardFreeze($this->inputname);
             $mform->setConstant($this->inputname, $this->datakey);
         }
-    }
-
-    /**
-     * Convert external data (csv file) from value to key for processing later
-     * by edit_save_data_preprocess.
-     *
-     * @param string $value one of the values in menu options
-     *
-     * @return int options key for the menu
-     */
-    public function convert_external_data($value)
-    {
-        $retval = array_search($value, $this->options);
-
-        // If value is not found in options then return null, so that it can be handled
-        // later by edit_save_data_preprocess
-        if ($retval === false) {
-            $retval = null;
-        }
-
-        return $retval;
     }
 }

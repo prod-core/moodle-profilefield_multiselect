@@ -21,7 +21,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2020061800;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->version = 2025080700;        // The current plugin version (Date: YYYYMMDDXX)
 $plugin->requires = 2012062500;        // Requires this Moodle version
 $plugin->component = 'profilefield_multiselect'; // Full name of the plugin (used for diagnostics)
 $plugin->release = 'MultiselectV3.0';
