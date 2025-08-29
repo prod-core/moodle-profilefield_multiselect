@@ -48,7 +48,7 @@ class profile_field_multiselect extends profile_field_base
 
         $options = explode("\n", $this->field->param1);
 
-        $this->options = array();
+        $this->options = [];
         if ($this->field->required) {
             $this->options[''] = get_string('choose').'...';
         }
@@ -59,8 +59,8 @@ class profile_field_multiselect extends profile_field_base
         /// Set the data key
         if ($this->data !== null) {
             $this->data = str_replace("\r", '', $this->data);
-            $this->datatmp = explode("\n", $this->data);
-            foreach ($this->datatmp as $key => $option1) {
+            $datatmp = explode("\n", $this->data);
+            foreach ($datatmp as $key => $option1) {
                 $this->datakey[] = (int) array_search($option1, $this->options);
             }
         }
@@ -85,7 +85,7 @@ class profile_field_multiselect extends profile_field_base
     public function edit_field_set_default($mform)
     {
         $defaultkey = '';
-        if (false !== array_search($this->field->defaultdata, $this->options)) {
+        if (in_array($this->field->defaultdata, $this->options)) {
             $defaultkey = (int) array_search($this->field->defaultdata, $this->options);
         }
 
@@ -118,5 +118,30 @@ class profile_field_multiselect extends profile_field_base
             $mform->hardFreeze($this->inputname);
             $mform->setConstant($this->inputname, $this->datakey);
         }
+    }
+
+    /**
+     * Process the data before it gets saved in database
+     *
+     * @param string|null $data
+     * @param stdClass    $datarecord
+     *
+     * @return string|null
+     */
+    public function edit_save_data_preprocess($data, $datarecord) {
+
+        if (!isset($data)) {
+            return $this->field->defaultdata;
+        }
+
+        if (is_string($data) || is_numeric($data)) {
+            return (string)$data;
+        }
+
+        if (is_array($data)) {
+            return $this->data;
+        }
+
+        return $this->field->defaultdata;
     }
 }
